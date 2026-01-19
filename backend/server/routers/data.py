@@ -6,7 +6,7 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException, Query
 
-from core.paths import LIVE_DIR
+from core.paths import LIVE_DIR, MIN_COVERAGE, TIER_THRESHOLDS
 from server.price_aggregation import PriceData, price_aggregation
 
 router = APIRouter()
@@ -41,14 +41,6 @@ def recalculate_portfolios_with_live_prices(
     Returns:
         Recalculated portfolios sorted by tier then coverage
     """
-    # Tier thresholds for reclassification
-    tier_thresholds = [
-        (0.95, 1, "HIGH_COVERAGE"),
-        (0.90, 2, "GOOD_COVERAGE"),
-        (0.85, 3, "MODERATE_COVERAGE"),
-    ]
-    # Minimum coverage threshold (filters out Tier 4)
-    min_coverage = 0.85
 
     recalculated = []
 
@@ -96,13 +88,13 @@ def recalculate_portfolios_with_live_prices(
         expected_profit = coverage - total_cost
 
         # Skip if coverage dropped below minimum threshold
-        if coverage < min_coverage:
+        if coverage < MIN_COVERAGE:
             continue
 
         # Reclassify tier
         tier = 3
         tier_label = "MODERATE_COVERAGE"
-        for threshold, t, label in tier_thresholds:
+        for threshold, t, label in TIER_THRESHOLDS:
             if coverage >= threshold:
                 tier = t
                 tier_label = label

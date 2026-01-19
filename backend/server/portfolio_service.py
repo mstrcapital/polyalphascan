@@ -11,20 +11,12 @@ from datetime import datetime, timezone
 
 from loguru import logger
 
-from core.paths import LIVE_DIR
+from core.paths import LIVE_DIR, TIER_THRESHOLDS
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
 RELOAD_INTERVAL_SECONDS = 60  # Reload portfolios.json periodically
-
-# Tier thresholds (coverage, tier_number, label)
-TIER_THRESHOLDS = [
-    (0.95, 1, "HIGH_COVERAGE"),
-    (0.90, 2, "GOOD_COVERAGE"),
-    (0.85, 3, "MODERATE_COVERAGE"),
-    (0.00, 4, "LOW_COVERAGE"),
-]
 
 
 # =============================================================================
