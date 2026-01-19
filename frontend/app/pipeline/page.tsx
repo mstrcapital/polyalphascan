@@ -9,6 +9,8 @@ export default function PipelinePage() {
   const [status, setStatus] = useState<PipelineStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [runningPipeline, setRunningPipeline] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [resetting, setResetting] = useState(false)
 
   async function fetchStatus() {
     try {
@@ -59,6 +61,23 @@ export default function PipelinePage() {
     // Don't reset runningPipeline here - let status.running control it
   }
 
+  async function resetPipeline() {
+    setResetting(true)
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/pipeline/reset`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        fetchStatus()
+      }
+    } catch (error) {
+      console.error('Failed to reset pipeline:', error)
+    } finally {
+      setResetting(false)
+      setShowResetConfirm(false)
+    }
+  }
+
   const isRunning = runningPipeline || status?.running || false
   const stepProgress = status?.step_progress
   const completedSteps = stepProgress?.completed_count || 0
@@ -78,7 +97,7 @@ export default function PipelinePage() {
         <div className="flex items-center gap-2">
           <button
             onClick={() => runPipeline(false, 50)}
-            disabled={isRunning}
+            disabled={isRunning || resetting}
             className="btn-secondary text-xs disabled:opacity-50"
             title="Quick test with 50 events"
           >
@@ -86,7 +105,7 @@ export default function PipelinePage() {
           </button>
           <button
             onClick={() => runPipeline(false)}
-            disabled={isRunning}
+            disabled={isRunning || resetting}
             className="btn-secondary text-xs disabled:opacity-50"
             title="Add recently created events"
           >
@@ -94,12 +113,45 @@ export default function PipelinePage() {
           </button>
           <button
             onClick={() => runPipeline(true)}
-            disabled={isRunning}
+            disabled={isRunning || resetting}
             className="btn-primary text-xs disabled:opacity-50"
             title="Rebuild everything from scratch"
           >
             {isRunning ? 'Processing...' : 'Full Rebuild'}
           </button>
+
+          {/* Separator */}
+          <div className="w-px h-6 bg-border mx-1" />
+
+          {/* Reset Button with Confirmation */}
+          {!showResetConfirm ? (
+            <button
+              onClick={() => setShowResetConfirm(true)}
+              disabled={isRunning || resetting}
+              className="btn-secondary text-xs disabled:opacity-50 text-text-muted hover:text-rose hover:border-rose/30"
+              title="Clear all pipeline data"
+            >
+              Reset
+            </button>
+          ) : (
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-lg border border-rose/30 bg-rose/5">
+              <span className="text-[10px] text-rose">Clear all data?</span>
+              <button
+                onClick={() => setShowResetConfirm(false)}
+                disabled={resetting}
+                className="px-2 py-0.5 text-[10px] rounded bg-surface-elevated hover:bg-surface-hover text-text-secondary disabled:opacity-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={resetPipeline}
+                disabled={resetting}
+                className="px-2 py-0.5 text-[10px] rounded bg-rose/10 hover:bg-rose/20 text-rose disabled:opacity-50 transition-colors"
+              >
+                {resetting ? 'Resetting...' : 'Confirm'}
+              </button>
+            </div>
+          )}
         </div>
       </div>
 

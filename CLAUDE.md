@@ -86,16 +86,18 @@ make clean          # Remove build artifacts
 | `/pipeline/run/production` | POST | Trigger pipeline (full/incremental/demo) |
 | `/pipeline/reset` | POST | Clear pipeline state |
 
-### Prices
-| Endpoint | Method | Description |
-|----------|--------|-------------|
-| `/prices/current` | GET | Cached prices (REST fallback) |
-| `/prices/ws` | WS | Live price updates |
-
 ### Portfolios
 | Endpoint | Method | Description |
 |----------|--------|-------------|
-| `/portfolios/ws` | WS | Real-time portfolio updates with filtering |
+| `/portfolios/ws` | WS | Real-time portfolio updates with filtering (primary) |
+
+### Prices (Internal/Debug)
+| Endpoint | Method | Description |
+|----------|--------|-------------|
+| `/prices/current` | GET | Raw event prices (not used by frontend) |
+| `/prices/ws` | WS | Raw price stream (not used by frontend) |
+
+> **Note**: Portfolio endpoints embed prices directly. The `/prices/*` endpoints exist for debugging and external API consumers only.
 
 ### System
 | Endpoint | Method | Description |

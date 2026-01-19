@@ -29,17 +29,6 @@ export function getPortfolioWsUrl(): string {
 }
 
 /**
- * Get the WebSocket URL for price updates.
- */
-export function getPricesWsUrl(): string {
-  if (typeof window === 'undefined') {
-    return 'ws://localhost:8000/prices/ws'
-  }
-  const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
-  return `${protocol}//${window.location.host}/ws/prices/ws`
-}
-
-/**
  * Get the API docs URL.
  */
 export function getApiDocsUrl(): string {

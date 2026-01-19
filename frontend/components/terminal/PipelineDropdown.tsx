@@ -14,6 +14,8 @@ export function PipelineDropdown() {
   const [isOpen, setIsOpen] = useState(false)
   const [status, setStatus] = useState<PipelineStatus | null>(null)
   const [runningPipeline, setRunningPipeline] = useState(false)
+  const [showResetConfirm, setShowResetConfirm] = useState(false)
+  const [resetting, setResetting] = useState(false)
   const dropdownRef = useRef<HTMLDivElement>(null)
 
   // Fetch pipeline status
@@ -70,6 +72,24 @@ export function PipelineDropdown() {
     } catch (error) {
       console.error('Failed to run pipeline:', error)
       setRunningPipeline(false)
+    }
+  }
+
+  // Reset pipeline state
+  async function resetPipeline() {
+    setResetting(true)
+    try {
+      const res = await fetch(`${getApiBaseUrl()}/pipeline/reset`, {
+        method: 'POST',
+      })
+      if (res.ok) {
+        fetchStatus()
+      }
+    } catch (error) {
+      console.error('Failed to reset pipeline:', error)
+    } finally {
+      setResetting(false)
+      setShowResetConfirm(false)
     }
   }
 
@@ -202,7 +222,7 @@ export function PipelineDropdown() {
             <div className="pt-2 border-t border-border space-y-1.5">
               <button
                 onClick={() => runPipeline(false, 50)}
-                disabled={isRunning}
+                disabled={isRunning || resetting}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs bg-surface-elevated hover:bg-surface-hover text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <span>Quick Demo</span>
@@ -210,7 +230,7 @@ export function PipelineDropdown() {
               </button>
               <button
                 onClick={() => runPipeline(false)}
-                disabled={isRunning}
+                disabled={isRunning || resetting}
                 className="w-full flex items-center justify-between px-2.5 py-1.5 rounded text-xs bg-surface-elevated hover:bg-surface-hover text-text-secondary hover:text-text-primary disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <span>Add New Events</span>
@@ -218,11 +238,46 @@ export function PipelineDropdown() {
               </button>
               <button
                 onClick={() => runPipeline(true)}
-                disabled={isRunning}
+                disabled={isRunning || resetting}
                 className="w-full px-2.5 py-1.5 rounded text-xs bg-cyan/10 hover:bg-cyan/20 text-cyan border border-cyan/30 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 {isRunning ? 'Processing...' : 'Full Rebuild'}
               </button>
+            </div>
+
+            {/* Reset Section */}
+            <div className="pt-2 border-t border-border">
+              {!showResetConfirm ? (
+                <button
+                  onClick={() => setShowResetConfirm(true)}
+                  disabled={isRunning || resetting}
+                  className="w-full px-2.5 py-1.5 rounded text-xs text-text-muted hover:text-rose hover:bg-rose/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  Reset All Data
+                </button>
+              ) : (
+                <div className="space-y-1.5">
+                  <p className="text-[10px] text-text-muted text-center">
+                    This will clear all pipeline data
+                  </p>
+                  <div className="flex gap-1.5">
+                    <button
+                      onClick={() => setShowResetConfirm(false)}
+                      disabled={resetting}
+                      className="flex-1 px-2 py-1 rounded text-xs bg-surface-elevated hover:bg-surface-hover text-text-secondary disabled:opacity-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={resetPipeline}
+                      disabled={resetting}
+                      className="flex-1 px-2 py-1 rounded text-xs bg-rose/10 hover:bg-rose/20 text-rose border border-rose/30 disabled:opacity-50 transition-colors"
+                    >
+                      {resetting ? 'Resetting...' : 'Confirm'}
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </div>
