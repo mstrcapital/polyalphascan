@@ -2,38 +2,7 @@
 
 import { useEffect, useCallback } from 'react'
 import { getCoverageColor, getCoverageBg } from '@/config/tier-config'
-
-// =============================================================================
-// TYPES
-// =============================================================================
-
-export interface Portfolio {
-  pair_id: string
-  target_group_title: string
-  target_group_slug?: string
-  target_market_slug?: string
-  target_question: string
-  target_position: 'YES' | 'NO'
-  target_price: number
-  target_bracket?: string
-  cover_group_title: string
-  cover_group_slug?: string
-  cover_market_slug?: string
-  cover_question: string
-  cover_position: 'YES' | 'NO'
-  cover_price: number
-  cover_bracket?: string
-  cover_probability: number
-  total_cost: number
-  coverage: number
-  loss_probability: number
-  expected_profit: number
-  tier: number
-  tier_label: string
-  relationship?: string
-  validation_analysis?: string
-  viability_score?: number
-}
+import type { Portfolio } from '@/types/portfolio'
 
 interface PortfolioModalProps {
   portfolio: Portfolio

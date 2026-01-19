@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
-import type { Portfolio } from '@/components/PortfolioModal'
+import type { Portfolio } from '@/types/portfolio'
 
 interface ExportDropdownProps {
   portfolios: Portfolio[]
