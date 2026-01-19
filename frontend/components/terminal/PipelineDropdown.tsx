@@ -4,31 +4,7 @@ import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
 import type { PipelineStatus } from '@/types/pipeline'
 import { getApiBaseUrl } from '@/config/api-config'
-
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-function formatElapsed(seconds: number): string {
-  if (seconds < 60) return `${Math.round(seconds)}s`
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}m ${secs}s`
-}
-
-function formatTime(isoString: string | null): string {
-  if (!isoString) return '—'
-  const date = new Date(isoString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-}
+import { formatElapsed, formatTime } from '@/utils/format-time'
 
 // =============================================================================
 // MAIN COMPONENT

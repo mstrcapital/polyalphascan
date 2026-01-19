@@ -11,6 +11,7 @@ import { DensityToggle, useDensity } from '@/components/terminal/DensityToggle'
 import { ExportDropdown } from '@/components/terminal/ExportDropdown'
 import { PortfolioTable } from '@/components/terminal/PortfolioTable'
 import { getApiBaseUrl } from '@/config/api-config'
+import { formatTime } from '@/utils/format-time'
 
 // =============================================================================
 // TYPES
@@ -19,24 +20,6 @@ import { getApiBaseUrl } from '@/config/api-config'
 interface PortfolioStats {
   total: number
   profitable: number
-}
-
-// =============================================================================
-// HELPERS
-// =============================================================================
-
-const formatTime = (isoString: string | null): string => {
-  if (!isoString) return '—'
-  const date = new Date(isoString)
-  const now = new Date()
-  const diffMs = now.getTime() - date.getTime()
-  const diffMins = Math.floor(diffMs / 60000)
-  const diffHours = Math.floor(diffMs / 3600000)
-
-  if (diffMins < 1) return 'just now'
-  if (diffMins < 60) return `${diffMins}m ago`
-  if (diffHours < 24) return `${diffHours}h ago`
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
 // =============================================================================

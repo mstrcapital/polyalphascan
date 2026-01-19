@@ -2,17 +2,11 @@
 
 import { useState } from 'react'
 import type { StepProgress, StepProgressData } from '@/types/pipeline'
+import { formatElapsed } from '@/utils/format-time'
 
 interface PipelineTimelineProps {
   stepProgress: StepProgressData | null
   isRunning: boolean
-}
-
-function formatElapsed(seconds: number): string {
-  if (seconds < 60) return `${seconds.toFixed(1)}s`
-  const mins = Math.floor(seconds / 60)
-  const secs = Math.floor(seconds % 60)
-  return `${mins}m ${secs}s`
 }
 
 function getStatusColor(status: string): string {
