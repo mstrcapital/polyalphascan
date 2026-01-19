@@ -87,37 +87,3 @@ export function PriceChangeIndicator({
   )
 }
 
-/**
- * Badge showing tier change notification.
- */
-export function TierChangeBadge({
-  oldTier,
-  newTier,
-  className = '',
-}: {
-  oldTier: number
-  newTier: number
-  className?: string
-}) {
-  const improved = newTier < oldTier
-  const tierLabels: Record<number, string> = {
-    1: 'Excellent',
-    2: 'Good',
-    3: 'Fair',
-    4: 'Low',
-  }
-
-  return (
-    <span
-      className={`
-        inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium
-        ${improved ? 'bg-emerald/20 text-emerald' : 'bg-rose/20 text-rose'}
-        animate-pulse
-        ${className}
-      `}
-    >
-      {improved ? '↑' : '↓'}
-      {tierLabels[oldTier]} → {tierLabels[newTier]}
-    </span>
-  )
-}
