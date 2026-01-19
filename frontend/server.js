@@ -26,18 +26,30 @@ app.prepare().then(() => {
   const server = createServer(async (req, res) => {
     const parsedUrl = parse(req.url, true)
 
-    // Let Next.js handle all HTTP requests
+    // Skip WebSocket paths - they should only be handled by upgrade event
+    if (parsedUrl.pathname?.startsWith('/ws')) {
+      console.log(`HTTP request to WS path (should be upgrade): ${parsedUrl.pathname}`)
+      res.writeHead(426, { 'Content-Type': 'text/plain' })
+      res.end('Upgrade Required')
+      return
+    }
+
+    // Let Next.js handle all other HTTP requests
     await handle(req, res, parsedUrl)
   })
 
   // Handle WebSocket upgrade requests
   server.on('upgrade', (req, socket, head) => {
     const { pathname } = parse(req.url)
+    const socketId = Math.random().toString(36).substring(7)
+
+    console.log(`WebSocket upgrade request: ${pathname}, socketId=${socketId}, remotePort=${socket.remotePort}`)
 
     if (pathname?.startsWith('/ws')) {
-      console.log(`WebSocket upgrade: ${pathname}`)
+      console.log(`WebSocket upgrade: ${pathname} (socketId=${socketId})`)
       wsProxy.upgrade(req, socket, head)
     } else {
+      console.log(`Destroying non-WS socket: ${pathname} (socketId=${socketId})`)
       socket.destroy()
     }
   })

@@ -19,28 +19,22 @@ export function getApiBaseUrl(): string {
 
 /**
  * Get the WebSocket URL for portfolio price updates.
- * Uses same-origin proxy path to avoid CORS/Safari issues.
  */
 export function getPortfolioWsUrl(): string {
   if (typeof window === 'undefined') {
     return 'ws://localhost:8000/portfolios/ws'
   }
-
-  // Use same-origin WebSocket via Next.js proxy
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}/ws/portfolios/ws`
 }
 
 /**
  * Get the WebSocket URL for price updates.
- * Uses same-origin proxy path to avoid CORS/Safari issues.
  */
 export function getPricesWsUrl(): string {
   if (typeof window === 'undefined') {
     return 'ws://localhost:8000/prices/ws'
   }
-
-  // Use same-origin WebSocket via Next.js proxy
   const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:'
   return `${protocol}//${window.location.host}/ws/prices/ws`
 }

@@ -1,17 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Enable React strict mode for development
   reactStrictMode: true,
 
-  // Proxy WebSocket connections to backend
-  async rewrites() {
-    return [
-      {
-        source: '/ws/:path*',
-        destination: 'http://localhost:8000/:path*',
-      },
-    ]
-  },
+  // NOTE: WebSocket proxying is handled by custom server.js
+  // Do NOT use rewrites for /ws/* as it conflicts with the custom server
 }
 
 module.exports = nextConfig
