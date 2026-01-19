@@ -10,13 +10,11 @@ import json
 import httpx
 from loguru import logger
 
-from core.paths import LIVE_DIR
+from core.paths import GAMMA_API_BASE_URL, LIVE_DIR
 
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-
-GAMMA_API_BASE_URL = "https://gamma-api.polymarket.com"
 REQUEST_TIMEOUT = 10.0
 
 

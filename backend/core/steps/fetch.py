@@ -12,11 +12,11 @@ from typing import Any
 import httpx
 from loguru import logger
 
+from core.paths import GAMMA_API_BASE_URL
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-
-GAMMA_API_BASE_URL = "https://gamma-api.polymarket.com"
 TARGET_TAG_SLUG = os.getenv("POLYMARKET_TAG", "politics")
 PAGE_SIZE = 100
 REQUEST_TIMEOUT = 30.0

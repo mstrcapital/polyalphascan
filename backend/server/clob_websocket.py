@@ -12,11 +12,11 @@ from datetime import datetime, timezone
 import websockets
 from loguru import logger
 
+from core.paths import CLOB_WS_URL
+
 # =============================================================================
 # CONFIGURATION
 # =============================================================================
-
-CLOB_WS_URL = "wss://ws-subscriptions-clob.polymarket.com/ws/market"
 PING_INTERVAL_SECONDS = 10
 RECONNECT_BASE_SECONDS = 2
 RECONNECT_MAX_SECONDS = 60
