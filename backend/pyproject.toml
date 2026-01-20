@@ -27,6 +27,9 @@ dependencies = [
     # Export
     "jinja2>=3.1.0",
     "hdbscan>=0.8.41",
+    "eth-account>=0.13.7",
+    "py-clob-client>=0.34.5",
+    "web3>=7.14.0",
 ]
 
 [build-system]
