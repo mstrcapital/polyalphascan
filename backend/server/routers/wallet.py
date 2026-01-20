@@ -6,7 +6,7 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from loguru import logger
+from web3.exceptions import Web3RPCError
 
 from core.wallet.storage import WalletStorage
 from core.wallet.manager import WalletManager
@@ -136,7 +136,7 @@ async def unlock_wallet(req: PasswordRequest):
             address=address,
             balances={"pol": balances.pol, "usdc_e": balances.usdc_e},
         )
-    except ValueError as e:
+    except ValueError:
         raise HTTPException(status_code=401, detail="Invalid password")
 
 
@@ -159,5 +159,14 @@ async def approve_contracts():
     try:
         tx_hashes = manager.set_approvals()
         return ApprovalResponse(success=True, tx_hashes=tx_hashes)
+    except Web3RPCError as e:
+        # Extract readable message from web3 error
+        msg = str(e)
+        if "insufficient funds" in msg.lower():
+            raise HTTPException(
+                status_code=400,
+                detail="Insufficient POL for gas. Please fund your wallet with POL.",
+            )
+        raise HTTPException(status_code=500, detail=msg)
     except ValueError as e:
         raise HTTPException(status_code=500, detail=str(e))
