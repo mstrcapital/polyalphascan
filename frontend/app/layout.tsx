@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { JetBrains_Mono, Syne } from 'next/font/google'
 import './globals.css'
 import { Sidebar } from '@/components/Sidebar'
+import { Providers } from '@/components/Providers'
 
 const jetbrains = JetBrains_Mono({
   subsets: ['latin'],
@@ -28,12 +29,14 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${jetbrains.variable} ${syne.variable}`}>
       <body className="font-mono bg-void text-text-primary antialiased">
-        <div className="flex h-screen">
-          <Sidebar />
-          <main className="flex-1 flex flex-col ml-48 p-6 min-h-0">
-            {children}
-          </main>
-        </div>
+        <Providers>
+          <div className="flex h-screen">
+            <Sidebar />
+            <main className="flex-1 flex flex-col ml-48 p-6 min-h-0">
+              {children}
+            </main>
+          </div>
+        </Providers>
       </body>
     </html>
   )

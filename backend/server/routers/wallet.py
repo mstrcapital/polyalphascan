@@ -64,7 +64,6 @@ class GenerateResponse(BaseModel):
 class UnlockResponse(BaseModel):
     unlocked: bool
     address: str
-    balances: dict
 
 
 class ApprovalResponse(BaseModel):
@@ -134,12 +133,7 @@ async def unlock_wallet(req: PasswordRequest):
 
     try:
         address = manager.unlock(req.password)
-        balances = manager.get_balances()
-        return UnlockResponse(
-            unlocked=True,
-            address=address,
-            balances={"pol": balances.pol, "usdc_e": balances.usdc_e},
-        )
+        return UnlockResponse(unlocked=True, address=address)
     except ValueError:
         raise HTTPException(status_code=401, detail="Invalid password")
 

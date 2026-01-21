@@ -28,32 +28,32 @@ const COLUMN_HINTS: Record<string, ColumnHint> = {
   favorite: {
     title: 'Watchlist',
     beginner: 'Click the star to track strategies you want to monitor. Pinned items stay at the top.',
-    pro: 'Persisted to localStorage. Sorted by coverage within pinned group.',
+    pro: 'Persisted to localStorage, sorted by coverage within pinned group.',
   },
   target: {
-    title: 'Target Bet',
-    beginner: 'The primary position you\'re betting on. This is the outcome you expect to win.',
-    pro: 'Higher probability event in the covered pair. Price shown is current ask.',
+    title: 'Main bet',
+    beginner: 'The primary position you\'re betting on — this is the outcome you expect to win.',
+    pro: 'Higher probability event in the pair, price shown is current ask.',
   },
   backup: {
-    title: 'Backup Bet',
-    beginner: 'Your hedge position. If target loses, this one wins — guaranteeing you get $1 back.',
-    pro: 'Covers the target\'s failure case. Combined cost < $1 = arbitrage opportunity.',
+    title: 'Backup bet',
+    beginner: 'Your hedge position. If main bet loses, this one wins — guaranteeing you get $1 back.',
+    pro: 'Covers the main bet\'s failure case. Combined cost < $1 = arbitrage.',
   },
   confidence: {
-    title: 'LLM Confidence',
-    beginner: 'AI-assessed probability that this strategy is logically valid (events truly cover all outcomes).',
-    pro: 'Primary sort key. Higher = more likely the coverage logic is sound. 80%+ is high confidence.',
+    title: 'AI confidence',
+    beginner: 'How confident the AI is that this strategy is logically valid (events truly cover all outcomes).',
+    pro: 'Primary sort key. 80%+ is high confidence.',
   },
   cost: {
-    title: 'Total Cost',
+    title: 'Total cost',
     beginner: 'How much you need to invest to buy both positions. Lower is better.',
-    pro: 'Sum of target + backup prices. Cost < $1.00 means guaranteed profit potential.',
+    pro: 'Sum of main + backup prices. Cost < $1.00 = guaranteed profit potential.',
   },
   return: {
-    title: 'Expected Return',
-    beginner: 'Your profit if the strategy works: (Payout - Cost) / Cost. Green = profit!',
-    pro: 'Secondary sort key. Formula: (1 - total_cost) / total_cost × 100%.',
+    title: 'Expected return',
+    beginner: 'Your profit if the strategy works. Green means profit.',
+    pro: 'Formula: (1 - total_cost) / total_cost × 100%.',
   },
 }
 

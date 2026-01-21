@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, createContext, useContext, ReactNode } from 'react'
 import { getApiBaseUrl } from '@/config/api-config'
 
 interface WalletBalances {
@@ -16,7 +16,7 @@ interface WalletStatus {
   approvals_set: boolean
 }
 
-interface UseWalletReturn {
+interface WalletContextValue {
   status: WalletStatus | null
   loading: boolean
   error: string | null
@@ -28,7 +28,9 @@ interface UseWalletReturn {
   approveContracts: () => Promise<void>
 }
 
-export function useWallet(): UseWalletReturn {
+const WalletContext = createContext<WalletContextValue | null>(null)
+
+export function WalletProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<WalletStatus | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -51,7 +53,7 @@ export function useWallet(): UseWalletReturn {
 
   useEffect(() => {
     refresh()
-    const interval = setInterval(refresh, 30000) // Refresh every 30s
+    const interval = setInterval(refresh, 30000)
     return () => clearInterval(interval)
   }, [refresh])
 
@@ -114,15 +116,27 @@ export function useWallet(): UseWalletReturn {
     await refresh()
   }, [apiBase, refresh])
 
-  return {
-    status,
-    loading,
-    error,
-    refresh,
-    generate,
-    importKey,
-    unlock,
-    lock,
-    approveContracts,
+  return (
+    <WalletContext.Provider value={{
+      status,
+      loading,
+      error,
+      refresh,
+      generate,
+      importKey,
+      unlock,
+      lock,
+      approveContracts,
+    }}>
+      {children}
+    </WalletContext.Provider>
+  )
+}
+
+export function useWallet(): WalletContextValue {
+  const context = useContext(WalletContext)
+  if (!context) {
+    throw new Error('useWallet must be used within a WalletProvider')
   }
+  return context
 }

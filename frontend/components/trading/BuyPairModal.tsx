@@ -11,7 +11,7 @@ interface BuyPairModalProps {
   onClose: () => void
 }
 
-type Step = 'input' | 'confirming' | 'executing' | 'success' | 'error'
+type Step = 'unlock' | 'input' | 'executing' | 'success' | 'error'
 
 interface TradeResult {
   success: boolean
@@ -25,13 +25,16 @@ interface TradeResult {
 export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
   const { status, loading: walletLoading, unlock } = useWallet()
   const [amount, setAmount] = useState('10')
-  const [step, setStep] = useState<Step>('input')
+  const [step, setStep] = useState<Step>(() => 'input')
   const [result, setResult] = useState<TradeResult | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [executionStep, setExecutionStep] = useState('')
   const [password, setPassword] = useState('')
   const [unlocking, setUnlocking] = useState(false)
   const [unlockError, setUnlockError] = useState<string | null>(null)
+
+  // Determine if we need unlock step
+  const needsUnlock = !walletLoading && !status?.unlocked
 
   const handleUnlock = async () => {
     if (!password) return
@@ -40,6 +43,7 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
     try {
       await unlock(password)
       setPassword('')
+      setStep('input')
     } catch (e) {
       setUnlockError(e instanceof Error ? e.message : 'Failed to unlock')
     } finally {
@@ -55,10 +59,6 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
   const meetsMinimum = amountNum >= MIN_AMOUNT
 
   const handleBuy = async () => {
-    if (!status?.unlocked) {
-      setError('Please unlock your wallet first')
-      return
-    }
     if (!hasSufficientBalance) {
       setError('Insufficient USDC.e balance')
       return
@@ -102,7 +102,7 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
       <div className="absolute inset-0 bg-void/80 backdrop-blur-sm" />
 
       <div
-        className="relative w-full max-w-md bg-surface border border-border rounded-xl shadow-2xl overflow-hidden"
+        className="relative w-full max-w-md max-h-[calc(100vh-32px)] bg-surface border border-border rounded-xl shadow-2xl overflow-hidden flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
@@ -116,8 +116,64 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
           </button>
         </div>
 
-        <div className="px-5 py-4 space-y-4">
-          {step === 'input' && (
+        <div className="px-5 py-4 space-y-4 overflow-y-auto flex-1 min-h-0">
+          {/* Loading wallet */}
+          {step === 'input' && walletLoading && (
+            <div className="py-8 text-center">
+              <div className="animate-spin w-8 h-8 border-2 border-cyan border-t-transparent rounded-full mx-auto mb-4" />
+              <p className="text-text-muted">Loading wallet...</p>
+            </div>
+          )}
+
+          {/* Unlock step - shown when wallet is locked */}
+          {step === 'input' && !walletLoading && needsUnlock && (
+            <div className="py-4 space-y-4">
+              <div className="text-center">
+                <div className="w-12 h-12 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-3">
+                  <svg className="w-6 h-6 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+                <h3 className="text-lg font-semibold text-text-primary">Unlock Wallet</h3>
+                <p className="text-text-muted text-sm mt-1">Enter your password to continue</p>
+              </div>
+
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
+                placeholder="Enter password"
+                autoFocus
+                className="w-full px-3 py-2.5 bg-surface-elevated border border-border rounded-lg text-text-primary text-sm placeholder:text-text-muted focus:outline-none focus:border-amber-500"
+              />
+
+              {unlockError && (
+                <div className="p-3 bg-rose/10 border border-rose/25 rounded-lg text-rose text-sm">
+                  {unlockError}
+                </div>
+              )}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={onClose}
+                  className="flex-1 py-2.5 px-4 border border-border rounded-lg text-text-muted hover:text-text-primary text-sm transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleUnlock}
+                  disabled={unlocking || !password}
+                  className="flex-1 py-2.5 px-4 bg-amber-500 hover:bg-amber-400 rounded-lg text-void text-sm font-medium transition-colors disabled:opacity-50"
+                >
+                  {unlocking ? 'Unlocking...' : 'Unlock'}
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Input step - shown when wallet is unlocked */}
+          {step === 'input' && !walletLoading && !needsUnlock && (
             <>
               {/* Positions */}
               <div className="space-y-2">
@@ -166,46 +222,15 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-text-muted">Your balance</span>
-                  {walletLoading ? (
-                    <span className="text-text-muted font-mono">Loading...</span>
-                  ) : (
-                    <span className={`font-mono ${hasSufficientBalance ? 'text-emerald' : 'text-rose'}`}>
-                      ${(status?.balances?.usdc_e || 0).toFixed(2)} USDC.e
-                    </span>
-                  )}
+                  <span className={`font-mono ${hasSufficientBalance ? 'text-emerald' : 'text-rose'}`}>
+                    ${(status?.balances?.usdc_e || 0).toFixed(2)} USDC.e
+                  </span>
                 </div>
               </div>
 
               {error && (
                 <div className="p-3 bg-rose/10 border border-rose/25 rounded-lg text-rose text-sm">
                   {error}
-                </div>
-              )}
-
-              {/* Unlock wallet inline */}
-              {!walletLoading && !status?.unlocked && (
-                <div className="bg-amber-500/10 border border-amber-500/25 rounded-lg p-3 space-y-2">
-                  <p className="text-amber-500 text-sm font-medium">Wallet is locked</p>
-                  <div className="flex gap-2">
-                    <input
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && handleUnlock()}
-                      placeholder="Enter password"
-                      className="flex-1 px-3 py-2 bg-surface border border-border rounded-lg text-text-primary text-sm placeholder:text-text-muted focus:outline-none focus:border-amber-500"
-                    />
-                    <button
-                      onClick={handleUnlock}
-                      disabled={unlocking || !password}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 rounded-lg text-void text-sm font-medium transition-colors disabled:opacity-50"
-                    >
-                      {unlocking ? 'Unlocking...' : 'Unlock'}
-                    </button>
-                  </div>
-                  {unlockError && (
-                    <p className="text-rose text-xs">{unlockError}</p>
-                  )}
                 </div>
               )}
 
@@ -219,10 +244,10 @@ export function BuyPairModal({ portfolio: p, onClose }: BuyPairModalProps) {
                 </button>
                 <button
                   onClick={handleBuy}
-                  disabled={walletLoading || !status?.unlocked || !hasSufficientBalance || !meetsMinimum}
+                  disabled={!hasSufficientBalance || !meetsMinimum}
                   className="flex-1 py-2.5 px-4 bg-cyan hover:bg-cyan/90 rounded-lg text-void text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {walletLoading ? 'Loading Wallet...' : !status?.unlocked ? 'Unlock Wallet First' : 'Confirm Purchase'}
+                  Confirm Purchase
                 </button>
               </div>
             </>
