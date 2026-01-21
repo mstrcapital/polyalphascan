@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState, useRef } from 'react'
-import Link from 'next/link'
 import type { PipelineStatus } from '@/types/pipeline'
 import { getApiBaseUrl } from '@/config/api-config'
 import { formatElapsed, formatTime } from '@/utils/format-time'
@@ -146,16 +145,7 @@ export function PipelineDropdown() {
         <div className="absolute right-0 top-full mt-1 w-72 bg-surface border border-border rounded-lg shadow-lg z-50 overflow-hidden">
           {/* Header */}
           <div className="px-3 py-2.5 border-b border-border bg-surface-elevated">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-medium text-text-primary">Pipeline Status</span>
-              <Link
-                href="/pipeline"
-                className="text-[10px] text-text-muted hover:text-cyan transition-colors"
-                onClick={() => setIsOpen(false)}
-              >
-                View details →
-              </Link>
-            </div>
+            <span className="text-xs font-medium text-text-primary">Pipeline Status</span>
           </div>
 
           {/* Content */}

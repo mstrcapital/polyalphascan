@@ -6,6 +6,7 @@ import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useFavorites } from '@/hooks/useFavorites'
 import { PortfolioModal } from '@/components/PortfolioModal'
 import { PipelineDropdown } from '@/components/terminal/PipelineDropdown'
+import { WalletDropdown } from '@/components/terminal/WalletDropdown'
 import { KeyboardShortcutsHelp } from '@/components/terminal/KeyboardShortcutsHelp'
 import { DensityToggle, useDensity } from '@/components/terminal/DensityToggle'
 import { ExportDropdown } from '@/components/terminal/ExportDropdown'
@@ -284,6 +285,9 @@ export default function TerminalPage() {
                   {status === 'connecting' ? 'Connecting...' : connected ? 'Live prices' : 'Offline'}
                 </span>
               </div>
+
+              {/* Wallet dropdown */}
+              <WalletDropdown />
 
               {/* Pipeline dropdown */}
               <PipelineDropdown />

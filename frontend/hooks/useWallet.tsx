@@ -102,8 +102,9 @@ export function WalletProvider({ children }: { children: ReactNode }) {
 
   const lock = useCallback(async (): Promise<void> => {
     await fetch(`${apiBase}/wallet/lock`, { method: 'POST' })
-    await refresh()
-  }, [apiBase, refresh])
+    // Optimistic update - don't wait for slow RPC calls in refresh()
+    setStatus(prev => prev ? { ...prev, unlocked: false, balances: null } : null)
+  }, [apiBase])
 
   const approveContracts = useCallback(async (): Promise<void> => {
     const res = await fetch(`${apiBase}/wallet/approve-contracts`, {
