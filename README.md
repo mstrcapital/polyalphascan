@@ -50,3 +50,7 @@ cd backend && uv run python -m uvicorn server.main:app --reload --port 8000
 cd frontend && npm install
 cd frontend && npm run dev
 ```
+
+---
+
+**Disclaimer:** This software is provided as-is for educational and research purposes only. It is not financial advice. Trading prediction markets involves risk—you may lose money. Use at your own discretion.
