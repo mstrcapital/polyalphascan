@@ -140,16 +140,6 @@ export default function PositionsPage() {
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <span className={`text-2xl font-semibold font-mono ${stats.total_pnl >= 0 ? 'text-emerald' : 'text-rose'}`}>
-                {stats.total_pnl >= 0 ? '+' : ''}{stats.total_pnl.toFixed(2)}
-              </span>
-              <div className="text-xs text-text-muted leading-tight">
-                <p>total P&L</p>
-                <p className="text-text-muted/70">all time</p>
-              </div>
-            </div>
-
             {issueCount > 0 && (
               <>
                 <div className="w-px h-10 bg-border" />
