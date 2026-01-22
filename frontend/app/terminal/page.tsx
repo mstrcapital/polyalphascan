@@ -5,13 +5,11 @@ import { usePortfolioPrices, Portfolio } from '@/hooks/usePortfolioPrices'
 import { useKeyboardShortcuts } from '@/hooks/useKeyboardShortcuts'
 import { useFavorites } from '@/hooks/useFavorites'
 import { PortfolioModal } from '@/components/PortfolioModal'
-import { PipelineDropdown } from '@/components/terminal/PipelineDropdown'
-import { WalletDropdown } from '@/components/terminal/WalletDropdown'
 import { KeyboardShortcutsHelp } from '@/components/terminal/KeyboardShortcutsHelp'
 import { densityStyles } from '@/components/terminal/DensityToggle'
 import { PortfolioTable } from '@/components/terminal/PortfolioTable'
+import { StatusIndicators } from '@/components/StatusIndicators'
 import { getApiBaseUrl } from '@/config/api-config'
-import { formatTime } from '@/utils/format-time'
 
 // =============================================================================
 // TYPES
@@ -50,8 +48,6 @@ export default function TerminalPage() {
   // Favorites
   const { favoriteSet, toggleFavorite, count: favoriteCount, clearAll: clearFavorites } = useFavorites()
 
-  // Pipeline status
-  const [lastRunTime, setLastRunTime] = useState<string | null>(null)
 
   // Refs
   const searchInputRef = useRef<HTMLInputElement>(null)
@@ -74,10 +70,7 @@ export default function TerminalPage() {
   const fetchData = useCallback(async () => {
     try {
       const apiBase = getApiBaseUrl()
-      const [statsRes, pipelineRes] = await Promise.all([
-        fetch(`${apiBase}/data/portfolios?limit=1&max_tier=1`),
-        fetch(`${apiBase}/pipeline/status`),
-      ])
+      const statsRes = await fetch(`${apiBase}/data/portfolios?limit=1&max_tier=1`)
 
       if (statsRes.ok) {
         const data = await statsRes.json()
@@ -85,11 +78,6 @@ export default function TerminalPage() {
           total: data.meta?.count || data.total_count || 0,
           profitable: data.meta?.profitable_count || data.profitable_count || 0,
         })
-      }
-
-      if (pipelineRes.ok) {
-        const pipelineData = await pipelineRes.json()
-        setLastRunTime(pipelineData?.production?.last_run?.completed_at || null)
       }
     } catch (error) {
       console.debug('Fetch error:', error)
@@ -266,34 +254,7 @@ export default function TerminalPage() {
             </div>
 
             {/* Right: Status indicators */}
-            <div className="flex items-center gap-3">
-              {lastRunTime && (
-                <span
-                  className="text-xs text-text-muted cursor-help"
-                  title="When the pipeline last analyzed markets for arbitrage opportunities"
-                >
-                  Markets scanned {formatTime(lastRunTime)}
-                </span>
-              )}
-
-              {/* Connection status */}
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={`w-1.5 h-1.5 rounded-full ${
-                    connected ? 'bg-emerald animate-pulse' : 'bg-text-muted'
-                  }`}
-                />
-                <span className="text-xs text-text-muted">
-                  {status === 'connecting' ? 'Connecting...' : connected ? 'Live prices' : 'Offline'}
-                </span>
-              </div>
-
-              {/* Wallet dropdown */}
-              <WalletDropdown />
-
-              {/* Pipeline dropdown */}
-              <PipelineDropdown />
-            </div>
+            <StatusIndicators connected={connected} connectionStatus={status} />
           </div>
         </header>
 

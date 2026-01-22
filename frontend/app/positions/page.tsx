@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { getApiBaseUrl } from '@/config/api-config'
-import { useWallet } from '@/hooks/useWallet'
 import { PositionsTable } from '@/components/positions/PositionsTable'
+import { StatusIndicators } from '@/components/StatusIndicators'
 
 // =============================================================================
 // TYPES
@@ -71,7 +71,6 @@ export default function PositionsPage() {
   const [error, setError] = useState<string | null>(null)
   const [filter, setFilter] = useState<FilterState>('all')
   const [stats, setStats] = useState({ count: 0, active_count: 0, total_pnl: 0 })
-  const { status } = useWallet()
 
   const fetchPositions = useCallback(async () => {
     try {
@@ -154,9 +153,8 @@ export default function PositionsPage() {
             )}
           </div>
 
-          {!status?.exists && (
-            <span className="text-xs text-text-muted">No wallet</span>
-          )}
+          {/* Right: Status indicators */}
+          <StatusIndicators />
         </div>
       </header>
 
