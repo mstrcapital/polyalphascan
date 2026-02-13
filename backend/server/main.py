@@ -53,8 +53,8 @@ app.include_router(prices.router, prefix="/prices", tags=["prices"])
 app.include_router(pipeline.router, prefix="/pipeline", tags=["pipeline"])
 app.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
 app.include_router(trading.router, prefix="/trading", tags=["trading"])
-app.include_router(markets.router, prefix="/data", tags=["markets"])
-app.include_router(monitoring.router, tags=["monitoring"])
+app.include_router(markets.router, prefix="/markets_data", tags=["markets"])
+app.include_router(monitoring.router, prefix="/monitoring", tags=["monitoring"])
 
 # Positions tracking
 from server.routers import positions, position_actions

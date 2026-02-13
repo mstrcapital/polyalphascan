@@ -107,7 +107,7 @@ def calculate_price_change(
 # =============================================================================
 
 
-@router.get("/markets")
+@router.get("/")
 async def list_markets(
     category: str = Query("all", regex="^(crypto|finance|all)$"),
     limit: int = Query(50, ge=1, le=200),

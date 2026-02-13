@@ -232,7 +232,7 @@ def calculate_pnl(activities: List[Dict]) -> Dict[str, Any]:
 # =============================================================================
 
 
-@router.get("/monitoring/accounts/{address}")
+@router.get("/accounts/{address}")
 async def get_account_summary(address: str):
     """
     Get account summary including bot detection.
@@ -290,7 +290,7 @@ async def get_account_summary(address: str):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/monitoring/accounts/{address}/activity")
+@router.get("/accounts/{address}/activity")
 async def get_account_activity(
     address: str,
     limit: int = Query(50, ge=1, le=500),
@@ -332,7 +332,7 @@ async def get_account_activity(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/monitoring/bots/detect/{address}")
+@router.get("/bots/detect/{address}")
 async def detect_bot(address: str):
     """
     Analyze an address and detect if it's a bot.

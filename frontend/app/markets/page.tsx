@@ -66,8 +66,8 @@ export default function MarketsPage() {
         active_only: 'true'
       })
       
-      // Ensure the endpoint is correct: /api/data/markets
-      const response = await fetch(`${apiBase}/data/markets?${params}`)
+      // Use the streamlined endpoint: /api/markets_data
+      const response = await fetch(`${apiBase}/markets_data?${params}`)
       
       if (!response.ok) {
         throw new Error(`HTTP ${response.status}: ${response.statusText}`)
