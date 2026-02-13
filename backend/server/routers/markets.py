@@ -201,9 +201,9 @@ async def list_markets(
                     "liquidity": market.get("liquidity", 0),
                     "end_date": market.get("endDate"),
                     "created_at": market.get("createdAt"),
-                    "icon": event.get("icon"),
+                    "icon": group.get("icon"),
                     "slug": market.get("slug"),
-                    "event_slug": event.get("slug"),
+                    "event_slug": group.get("slug"),
                 })
         
         # Sort

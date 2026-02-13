@@ -59,40 +59,46 @@ async function proxyRequest(request: NextRequest, path: string[]) {
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ path?: string[] }> }
+  { params }: { params: any }
 ) {
-  const { path } = await params
-  return proxyRequest(request, path || [])
+  // Handle both Promise and sync params for Next.js compatibility
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params));
+  const path = resolvedParams?.path || [];
+  return proxyRequest(request, path)
 }
 
 export async function POST(
   request: NextRequest,
-  { params }: { params: Promise<{ path?: string[] }> }
+  { params }: { params: any }
 ) {
-  const { path } = await params
-  return proxyRequest(request, path || [])
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params));
+  const path = resolvedParams?.path || [];
+  return proxyRequest(request, path)
 }
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: Promise<{ path?: string[] }> }
+  { params }: { params: any }
 ) {
-  const { path } = await params
-  return proxyRequest(request, path || [])
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params));
+  const path = resolvedParams?.path || [];
+  return proxyRequest(request, path)
 }
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ path?: string[] }> }
+  { params }: { params: any }
 ) {
-  const { path } = await params
-  return proxyRequest(request, path || [])
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params));
+  const path = resolvedParams?.path || [];
+  return proxyRequest(request, path)
 }
 
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ path?: string[] }> }
+  { params }: { params: any }
 ) {
-  const { path } = await params
-  return proxyRequest(request, path || [])
+  const resolvedParams = await (params instanceof Promise ? params : Promise.resolve(params));
+  const path = resolvedParams?.path || [];
+  return proxyRequest(request, path)
 }
