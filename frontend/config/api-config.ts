@@ -8,12 +8,8 @@
  * Server-side uses direct connection.
  */
 export function getApiBaseUrl(): string {
-  if (typeof window === 'undefined') {
-    // Server-side rendering - direct connection
-    return 'http://localhost:8000'
-  }
-
-  // Client-side - use Next.js API proxy to avoid CORS/Safari issues
+  // Always use /api proxy for both client and server components in Next.js App Router
+  // to ensure consistency and leverage the [[...path]]/route.ts proxy logic
   return '/api'
 }
 
