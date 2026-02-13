@@ -11,7 +11,7 @@ from loguru import logger
 
 from server import __version__
 from server.price_aggregation import price_aggregation
-from server.routers import data, pipeline, prices, wallet, trading
+from server.routers import data, pipeline, prices, wallet, trading, markets, monitoring
 from core.market_poller import market_poller
 
 
@@ -53,6 +53,8 @@ app.include_router(prices.router, prefix="/prices", tags=["prices"])
 app.include_router(pipeline.router, prefix="/pipeline", tags=["pipeline"])
 app.include_router(wallet.router, prefix="/wallet", tags=["wallet"])
 app.include_router(trading.router, prefix="/trading", tags=["trading"])
+app.include_router(markets.router, prefix="/data", tags=["markets"])
+app.include_router(monitoring.router, tags=["monitoring"])
 
 # Positions tracking
 from server.routers import positions, position_actions

@@ -6,6 +6,8 @@ import { getApiDocsUrl } from '@/config/api-config'
 
 const getNavigation = () => [
   { name: 'Terminal', href: '/terminal' },
+  { name: 'Markets', href: '/markets' },
+  { name: 'Monitoring', href: '/monitoring' },
   { name: 'Positions', href: '/positions' },
   { name: 'API Docs', href: getApiDocsUrl(), external: true },
 ]
