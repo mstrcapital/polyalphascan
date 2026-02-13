@@ -10,6 +10,7 @@ import { densityStyles } from '@/components/terminal/DensityToggle'
 import { PortfolioTable } from '@/components/terminal/PortfolioTable'
 import { StatusIndicators } from '@/components/StatusIndicators'
 import { getApiBaseUrl } from '@/config/api-config'
+import { OpenClawChat } from '@/components/OpenClawChat'
 
 // =============================================================================
 // TYPES
@@ -301,35 +302,45 @@ export default function TerminalPage() {
           </div>
         </div>
 
-        {/* Portfolio Table */}
-        {status === 'connecting' && portfolios.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center">
-            <span className="text-sm text-text-muted">Connecting to live prices...</span>
+        {/* Main Content Area: Grid for Table and Chat */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 min-h-0 overflow-hidden flex-1">
+          {/* Left Column: Portfolio Table */}
+          <div className="lg:col-span-2 flex flex-col min-h-0 overflow-hidden">
+            {status === 'connecting' && portfolios.length === 0 ? (
+              <div className="flex-1 flex items-center justify-center">
+                <span className="text-sm text-text-muted">Connecting to live prices...</span>
+              </div>
+            ) : portfolios.length === 0 && stats.total === 0 ? (
+              <div className="flex-1 flex flex-col items-center justify-center border border-border rounded-lg bg-surface">
+                <p className="text-sm text-text-secondary mb-1">No strategies found yet</p>
+                <p className="text-xs text-text-muted mb-4">
+                  Run the pipeline to discover hedging opportunities
+                </p>
+              </div>
+            ) : (
+              <PortfolioTable
+                portfolios={sortedPortfolios}
+                density={density}
+                selectedIndex={selectedIndex}
+                changedIds={changedIds}
+                priceChanges={priceChanges}
+                pinnedCount={pinnedCount}
+                connected={connected}
+                favoriteSet={favoriteSet}
+                onSelect={(index, portfolio) => {
+                  setSelectedIndex(index)
+                  setSelectedPortfolio(portfolio)
+                }}
+                onToggleFavorite={toggleFavorite}
+              />
+            )}
           </div>
-        ) : portfolios.length === 0 && stats.total === 0 ? (
-          <div className="flex-1 flex flex-col items-center justify-center border border-border rounded-lg bg-surface">
-            <p className="text-sm text-text-secondary mb-1">No strategies found yet</p>
-            <p className="text-xs text-text-muted mb-4">
-              Run the pipeline to discover hedging opportunities
-            </p>
+
+          {/* Right Column: OpenClaw Chat */}
+          <div className="flex flex-col min-h-[400px]">
+            <OpenClawChat />
           </div>
-        ) : (
-          <PortfolioTable
-            portfolios={sortedPortfolios}
-            density={density}
-            selectedIndex={selectedIndex}
-            changedIds={changedIds}
-            priceChanges={priceChanges}
-            pinnedCount={pinnedCount}
-            connected={connected}
-            favoriteSet={favoriteSet}
-            onSelect={(index, portfolio) => {
-              setSelectedIndex(index)
-              setSelectedPortfolio(portfolio)
-            }}
-            onToggleFavorite={toggleFavorite}
-          />
-        )}
+        </div>
       </div>
 
       {/* Portfolio Detail Modal */}

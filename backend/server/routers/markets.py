@@ -137,9 +137,9 @@ async def list_markets(
         }
     """
     try:
-        # Load events from live data
-        events_file = LIVE_DIR / "events.json"
-        if not events_file.exists():
+        # Load groups from live data (groups contain markets)
+        groups_file = LIVE_DIR / "groups.json"
+        if not groups_file.exists():
             return {
                 "markets": [],
                 "meta": {
@@ -150,17 +150,20 @@ async def list_markets(
                 }
             }
         
-        events = json.loads(events_file.read_text())
+        groups_data = json.loads(groups_file.read_text())
+        groups = groups_data.get("groups", [])
         
         # Get live prices
         live_prices = price_aggregation.get_prices()
         
         # Extract and categorize markets
         markets = []
-        for event in events:
-            event_tags = event.get("tags", [])
+        for group in groups:
+            # In our data structure, group might have tags or markets
+            # Use group title/markets for categorization
+            event_tags = group.get("tags", [])
             
-            for market in event.get("markets", []):
+            for market in group.get("markets", []):
                 if active_only and not market.get("active"):
                     continue
                 

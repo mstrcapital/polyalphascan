@@ -29,7 +29,7 @@ from core.state import export_live_data, load_state
 from core.steps.expand import expand_all_to_pairs, expand_to_pairs
 from core.steps.fetch import fetch_events
 from core.steps.groups import build_groups, extract_markets_from_groups
-from core.steps.implications import extract_implications_batch
+from core.steps.implications_parallel import extract_implications_parallel as extract_implications_batch
 from core.steps.portfolios import build_and_save_portfolios
 from core.steps.validate import validate_pairs
 
@@ -160,7 +160,7 @@ async def run_async(
                 portfolios, price_summary = update_portfolio_prices(
                     state, price_updates
                 )
-                export_live_data(state, groups, portfolios)
+                export_live_data(state, groups, portfolios, events=all_events)
 
                 state.complete_run(run_id, len(all_events), 0, "completed")
 
@@ -185,14 +185,10 @@ async def run_async(
         # STEP 4: Extract implications (LLM, CACHED)
         # =====================================================================
         with tracker.step(4, "Find Implications"):
+            # Use the parallel implementation for 10x speed
             implications = await extract_implications_batch(
                 groups=new_groups,
-                all_groups=groups,
-                state=state,
-                llm_model=impl_model,
-                batch_size=10,
-                max_concurrent=8,
-                progress_callback=tracker.update_details,
+                max_concurrent=int(os.getenv("LLM_MAX_CONCURRENT", "10"))
             )
 
             total_yes = sum(len(i.get("yes_covered_by", [])) for i in implications)
@@ -275,7 +271,7 @@ async def run_async(
         # STEP 8: Export data
         # =====================================================================
         with tracker.step(8, "Export Data"):
-            export_live_data(state, groups, portfolios)
+            export_live_data(state, groups, portfolios, events=all_events)
             tracker.update_details("Saved to data/_live/")
 
         # Complete run

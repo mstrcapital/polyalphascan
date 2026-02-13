@@ -28,6 +28,7 @@ STATE_DB_PATH = LIVE_DIR / "state.db"
 # Live data paths
 GROUPS_PATH = LIVE_DIR / "groups.json"
 PORTFOLIOS_PATH = LIVE_DIR / "portfolios.json"
+EVENTS_PATH = LIVE_DIR / "events.json"
 
 # Seed data path
 SEED_DATA_PATH = SEED_DIR / "seed.json"
@@ -934,6 +935,7 @@ def export_live_data(
     state: PipelineState,
     groups: list[dict],
     portfolios: list[dict],
+    events: list[dict] | None = None,
 ) -> None:
     """
     Export data to _live/ directory for API consumption.
@@ -983,6 +985,10 @@ def export_live_data(
         "portfolios": portfolios,
     }
     PORTFOLIOS_PATH.write_text(json.dumps(portfolios_data, indent=2))
+
+    # Export events if provided
+    if events:
+        EVENTS_PATH.write_text(json.dumps(events, indent=2))
 
     logger.info(
         f"Exported to _live/: {len(groups)} groups, {len(portfolios)} portfolios "
