@@ -2,8 +2,8 @@
 Markets data router - provides categorized market information.
 
 Endpoints:
-- GET /markets - List markets by category (crypto, finance, all)
-- GET /markets/{market_id}/stats - Get detailed market statistics
+- GET /data/markets - List markets by category (crypto, finance, all)
+- GET /data/markets/{market_id}/stats - Get detailed market statistics
 """
 
 import asyncio
@@ -69,6 +69,51 @@ def categorize_market(title: str, tags: List[str]) -> str:
     return "other"
 
 
+async def fetch_markets_from_gamma_direct(category: str) -> List[dict]:
+    """Fallback: Fetch markets directly from Gamma API if local data is missing."""
+    tag_map = {
+        "crypto": "crypto",
+        "finance": "business", # Gamma uses business/economy for finance
+        "all": "politics" # Default to politics if all
+    }
+    
+    tag_slug = tag_map.get(category, "politics")
+    url = f"{GAMMA_API_BASE_URL}/events?tag_slug={tag_slug}&limit=20&active=true"
+    
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            resp = await client.get(url)
+            resp.raise_for_status()
+            events = resp.json()
+            
+            markets = []
+            for event in events:
+                event_tags = [t.get("name", "") for t in event.get("tags", [])]
+                for market in event.get("markets", []):
+                    m_title = market.get("question", "")
+                    m_cat = categorize_market(m_title, event_tags)
+                    
+                    markets.append({
+                        "id": market.get("id"),
+                        "title": m_title,
+                        "category": m_cat,
+                        "yes_price": 0.5, # Default for fallback
+                        "no_price": 0.5,
+                        "volume_24h": market.get("volume", 0),
+                        "price_change_24h": 0.0,
+                        "liquidity": market.get("liquidity", 0),
+                        "end_date": market.get("endDate"),
+                        "created_at": market.get("createdAt"),
+                        "icon": event.get("icon"),
+                        "slug": market.get("slug"),
+                        "event_slug": event.get("slug"),
+                    })
+            return markets
+    except Exception as e:
+        logger.error(f"Fallback fetch failed: {e}")
+        return []
+
+
 async def fetch_market_from_gamma(market_id: str) -> Optional[dict]:
     """Fetch market details from Gamma API."""
     try:
@@ -79,27 +124,6 @@ async def fetch_market_from_gamma(market_id: str) -> Optional[dict]:
     except Exception as e:
         logger.error(f"Failed to fetch market {market_id}: {e}")
         return None
-
-
-def calculate_price_change(
-    current_price: float,
-    history: List[dict]
-) -> Optional[float]:
-    """Calculate 24h price change."""
-    if not history:
-        return None
-    
-    # Find price 24h ago
-    now = datetime.now(timezone.utc)
-    day_ago = now - timedelta(hours=24)
-    
-    for entry in reversed(history):
-        ts = datetime.fromtimestamp(entry["timestamp"], tz=timezone.utc)
-        if ts <= day_ago:
-            old_price = entry.get("yes", 0.5)
-            return current_price - old_price
-    
-    return None
 
 
 # =============================================================================
@@ -115,106 +139,63 @@ async def list_markets(
     sort: str = Query("volume", regex="^(volume|price_change|created_at)$"),
     active_only: bool = Query(True),
 ):
-    """
-    List markets by category.
+    """List markets by category with fallback to live API."""
+    markets = []
+    total = 0
     
-    Args:
-        category: Filter by category (crypto, finance, all)
-        limit: Number of results to return
-        offset: Pagination offset
-        sort: Sort field (volume, price_change, created_at)
-        active_only: Only return active markets
-    
-    Returns:
-        {
-            "markets": [...],
-            "meta": {
-                "total": int,
-                "limit": int,
-                "offset": int,
-                "category": str
-            }
-        }
-    """
     try:
-        # Load groups from live data (groups contain markets)
+        # 1. Try to load from local groups.json
         groups_file = LIVE_DIR / "groups.json"
-        if not groups_file.exists():
-            return {
-                "markets": [],
-                "meta": {
-                    "total": 0,
-                    "limit": limit,
-                    "offset": offset,
-                    "category": category
-                }
-            }
-        
-        groups_data = json.loads(groups_file.read_text())
-        groups = groups_data.get("groups", [])
-        
-        # Get live prices
-        live_prices = price_aggregation.get_prices()
-        
-        # Extract and categorize markets
-        markets = []
-        for group in groups:
-            # In our data structure, group might have tags or markets
-            # Use group title/markets for categorization
-            event_tags = group.get("tags", [])
+        if groups_file.exists():
+            groups_data = json.loads(groups_file.read_text())
+            groups = groups_data.get("groups", [])
+            live_prices = price_aggregation.get_prices()
             
-            for market in group.get("markets", []):
-                if active_only and not market.get("active"):
-                    continue
-                
-                market_id = market.get("id")
-                title = market.get("question", "")
-                
-                # Categorize
-                market_category = categorize_market(title, event_tags)
-                
-                # Filter by category
-                if category != "all" and market_category != category:
-                    continue
-                
-                # Get live price
-                price_data = live_prices.get(market_id)
-                yes_price = price_data.price if price_data and price_data.price else 0.5
-                no_price = 1 - yes_price
-                
-                # Parse outcome prices for volume estimation
-                outcome_prices = market.get("outcomePrices", [0.5, 0.5])
-                if isinstance(outcome_prices, str):
-                    outcome_prices = json.loads(outcome_prices)
-                
-                # Estimate volume (placeholder - would need historical data)
-                volume_24h = market.get("volume", 0)
-                
-                markets.append({
-                    "id": market_id,
-                    "title": title,
-                    "category": market_category,
-                    "yes_price": round(yes_price, 4),
-                    "no_price": round(no_price, 4),
-                    "volume_24h": volume_24h,
-                    "price_change_24h": 0.0,  # Placeholder
-                    "liquidity": market.get("liquidity", 0),
-                    "end_date": market.get("endDate"),
-                    "created_at": market.get("createdAt"),
-                    "icon": group.get("icon"),
-                    "slug": market.get("slug"),
-                    "event_slug": group.get("slug"),
-                })
+            for group in groups:
+                event_tags = group.get("tags", [])
+                for market in group.get("markets", []):
+                    if active_only and not market.get("active"):
+                        continue
+                    
+                    m_id = market.get("id")
+                    title = market.get("question", "")
+                    m_cat = categorize_market(title, event_tags)
+                    
+                    if category != "all" and m_cat != category:
+                        continue
+                    
+                    price_data = live_prices.get(m_id)
+                    yes_price = price_data.price if price_data and price_data.price else 0.5
+                    
+                    markets.append({
+                        "id": m_id,
+                        "title": title,
+                        "category": m_cat,
+                        "yes_price": round(yes_price, 4),
+                        "no_price": round(1 - yes_price, 4),
+                        "volume_24h": market.get("volume", 0),
+                        "price_change_24h": 0.0,
+                        "liquidity": market.get("liquidity", 0),
+                        "end_date": market.get("endDate"),
+                        "created_at": market.get("createdAt"),
+                        "icon": group.get("icon"),
+                        "slug": market.get("slug"),
+                        "event_slug": group.get("slug"),
+                    })
         
-        # Sort
+        # 2. Fallback to Gamma API if no markets found locally
+        if not markets:
+            logger.info(f"No local markets found, falling back to Gamma API for {category}")
+            markets = await fetch_markets_from_gamma_direct(category)
+            
+        # 3. Sort and Paginate
         if sort == "volume":
-            markets.sort(key=lambda m: m["volume_24h"], reverse=True)
+            markets.sort(key=lambda m: m.get("volume_24h", 0), reverse=True)
         elif sort == "price_change":
-            markets.sort(key=lambda m: abs(m["price_change_24h"]), reverse=True)
+            markets.sort(key=lambda m: abs(m.get("price_change_24h", 0)), reverse=True)
         elif sort == "created_at":
-            markets.sort(key=lambda m: m["created_at"] or "", reverse=True)
-        
-        # Paginate
+            markets.sort(key=lambda m: m.get("created_at") or "", reverse=True)
+            
         total = len(markets)
         markets = markets[offset:offset + limit]
         
@@ -224,46 +205,31 @@ async def list_markets(
                 "total": total,
                 "limit": limit,
                 "offset": offset,
-                "category": category
+                "category": category,
+                "source": "local" if groups_file.exists() else "gamma_fallback"
             }
         }
-    
+        
     except Exception as e:
         logger.error(f"Error listing markets: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/markets/{market_id}/stats")
-async def get_market_stats(market_id: str):
-    """
-    Get detailed statistics for a specific market.
-    
-    Returns:
-        {
-            "market_id": str,
-            "title": str,
-            "current_price": float,
-            "volume_24h": float,
-            "recent_trades": [...],
-            "price_history": [...]
+        # Return empty list instead of 500 to keep UI alive
+        return {
+            "markets": [],
+            "meta": {"total": 0, "error": str(e)}
         }
-    """
+
+
+@router.get("/{market_id}/stats")
+async def get_market_stats(market_id: str):
+    """Get detailed statistics for a specific market."""
     try:
-        # Fetch market details from Gamma API
         market_data = await fetch_market_from_gamma(market_id)
-        
         if not market_data:
             raise HTTPException(status_code=404, detail="Market not found")
-        
-        # Get current price
+            
         live_prices = price_aggregation.get_prices()
         price_data = live_prices.get(market_id)
         current_price = price_data.price if price_data and price_data.price else 0.5
-        
-        # Parse outcome prices
-        outcome_prices = market_data.get("outcomePrices", "[0.5, 0.5]")
-        if isinstance(outcome_prices, str):
-            outcome_prices = json.loads(outcome_prices)
         
         return {
             "market_id": market_id,
@@ -281,12 +247,9 @@ async def get_market_stats(market_id: str):
             "closed": market_data.get("closed", False),
             "active": market_data.get("active", True),
             "clob_token_ids": json.loads(market_data.get("clobTokenIds", "[]")),
-            "recent_trades": [],  # Placeholder - would need CLOB API
-            "price_history": []   # Placeholder - would need historical data
+            "recent_trades": [],
+            "price_history": []
         }
-    
-    except HTTPException:
-        raise
     except Exception as e:
-        logger.error(f"Error getting market stats for {market_id}: {e}")
+        logger.error(f"Error getting market stats: {e}")
         raise HTTPException(status_code=500, detail=str(e))

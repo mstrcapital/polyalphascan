@@ -30,6 +30,7 @@ interface MarketsResponse {
     limit: number
     offset: number
     category: string
+    source?: string
   }
 }
 
@@ -41,6 +42,7 @@ export default function MarketsPage() {
   const [markets, setMarkets] = useState<Market[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [meta, setMeta] = useState<MarketsResponse['meta'] | null>(null)
   
   // Filters
   const [category, setCategory] = useState<'all' | 'crypto' | 'finance'>('all')
@@ -81,6 +83,7 @@ export default function MarketsPage() {
       const data: MarketsResponse = await response.json()
       setMarkets(data.markets)
       setTotal(data.meta.total)
+      setMeta(data.meta)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to fetch markets')
       console.error('Error fetching markets:', err)
@@ -130,10 +133,16 @@ export default function MarketsPage() {
               Browse crypto and finance prediction markets
             </p>
           </div>
-          
-          <div className="text-right">
-            <div className="text-2xl font-semibold font-mono text-cyan">{total}</div>
-            <div className="text-xs text-text-muted">active markets</div>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl font-semibold font-mono text-cyan">{total}</span>
+              <span className="text-xs text-text-muted">active markets</span>
+            </div>
+            {meta?.source === 'gamma_fallback' && (
+              <div className="px-2 py-0.5 bg-amber/10 border border-amber/20 rounded text-[10px] text-amber animate-pulse">
+                Live API Fallback
+              </div>
+            )}
           </div>
         </div>
 
