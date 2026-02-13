@@ -103,13 +103,9 @@ export default function MarketsPage() {
           const gammaCategory = category === 'finance' ? 'business' : (category === 'crypto' ? 'crypto' : 'politics')
           // Use a public proxy or our own backend if it was up, but since everything failed, 
           // we try the most direct reliable URL.
-          const gammaUrl = `https://gamma-api.polymarket.com/events?tag_slug=${gammaCategory}&limit=20&active=true`
-          
-          // Use 'no-cors' only as a last resort, but better to use a try-catch with a message
-          const gammaResp = await fetch(gammaUrl, { mode: 'cors' })
-          if (!gammaResp.ok) throw new Error(`Gamma API failed: ${gammaResp.status}`)
-          
-          const events = await gammaResp.json()
+          // --- LAYER 3: Official Polymarket API Fallback (DEPRECATED: Use Layer 1 Server Proxy instead) ---
+          addLog(`Layer 3: Browser direct access is blocked by CORS/Region. Relying on Layer 1 Server Proxy...`)
+          throw new Error("Local backend and Proxy both failed. Please check Server Logs.")
           const mappedMarkets: Market[] = []
           
           events.forEach((event: any) => {
