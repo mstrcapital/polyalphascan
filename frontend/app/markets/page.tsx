@@ -75,9 +75,9 @@ export default function MarketsPage() {
         active_only: 'true'
       })
       
-      // --- LAYER 1: API Proxy ---
-      const proxyUrl = `${apiBase}/data/markets?${params}`
-      addLog(`Layer 1: Trying proxy ${proxyUrl}`)
+      // --- LAYER 1: API Proxy (Simplified Path) ---
+      const proxyUrl = `/api/markets?${params}`
+      addLog(`Layer 1: Trying simplified proxy ${proxyUrl}`)
       
       let response: Response;
       let usedSource = 'proxy';
