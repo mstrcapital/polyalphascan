@@ -11,6 +11,9 @@ const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_U
 async function proxyRequest(request: NextRequest, path: string[]) {
   const backendPath = '/' + (path?.join('/') || '')
   const url = new URL(backendPath, BACKEND_URL)
+  
+  console.log(`[Proxy] Forwarding request to: ${url.toString()}`);
+  console.log(`[Proxy] Backend URL used: ${BACKEND_URL}`);
 
   // Forward query params
   request.nextUrl.searchParams.forEach((value, key) => {

@@ -68,8 +68,19 @@ export default function MarketsPage() {
         active_only: 'true'
       })
       
-      // Use the standard data endpoint: /api/data/markets
-      const response = await fetch(`${apiBase}/data/markets?${params}`)
+      // Try Next.js API proxy first
+      let response = await fetch(`${apiBase}/data/markets?${params}`)
+      
+      // If proxy fails with 404 or 502, try direct backend connection as fallback
+      if (!response.ok && (response.status === 404 || response.status === 502)) {
+        console.warn('API Proxy failed, attempting direct backend connection...');
+        const directUrl = `http://localhost:8000/data/markets?${params}`;
+        try {
+          response = await fetch(directUrl);
+        } catch (e) {
+          console.error('Direct backend connection also failed');
+        }
+      }
       
       if (!response.ok) {
         let errorDetail = '';
