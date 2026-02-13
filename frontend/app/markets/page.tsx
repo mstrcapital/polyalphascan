@@ -159,12 +159,17 @@ export default function MarketsPage() {
     market.title.toLowerCase().includes(searchQuery.toLowerCase())
   )
 
-  const formatPrice = (price: number) => `${(price * 100).toFixed(1)}%`
+  const formatPrice = (price: number) => {
+    const val = typeof price === 'number' ? price : parseFloat(price)
+    return isNaN(val) ? '--%' : `${(val * 100).toFixed(1)}%`
+  }
   
   const formatVolume = (volume: number) => {
-    if (volume >= 1000000) return `$${(volume / 1000000).toFixed(1)}M`
-    if (volume >= 1000) return `$${(volume / 1000).toFixed(1)}K`
-    return `$${volume.toFixed(0)}`
+    const val = typeof volume === 'number' ? volume : parseFloat(volume)
+    if (isNaN(val)) return '$0'
+    if (val >= 1000000) return `$${(val / 1000000).toFixed(1)}M`
+    if (val >= 1000) return `$${(val / 1000).toFixed(1)}K`
+    return `$${val.toFixed(0)}`
   }
 
   const formatPriceChange = (change: number) => {
