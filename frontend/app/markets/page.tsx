@@ -70,7 +70,12 @@ export default function MarketsPage() {
       const response = await fetch(`${apiBase}/markets_data?${params}`)
       
       if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+        let errorDetail = '';
+        try {
+          const errorData = await response.json();
+          errorDetail = errorData.detail || errorData.error || '';
+        } catch (e) {}
+        throw new Error(`HTTP ${response.status}: ${response.statusText} ${errorDetail}`)
       }
       
       const data: MarketsResponse = await response.json()

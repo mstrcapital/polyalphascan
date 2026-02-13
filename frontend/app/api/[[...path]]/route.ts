@@ -6,7 +6,7 @@
 
 import { NextRequest, NextResponse } from 'next/server'
 
-const BACKEND_URL = process.env.BACKEND_URL || 'http://localhost:8000'
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || process.env.BACKEND_URL || 'http://localhost:8000'
 
 async function proxyRequest(request: NextRequest, path: string[]) {
   const backendPath = '/' + (path?.join('/') || '')
