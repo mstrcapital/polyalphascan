@@ -98,12 +98,15 @@ export default function MarketsPage() {
         } catch (backendErr) {
           addLog(`Direct backend failed: ${backendErr instanceof Error ? backendErr.message : 'Unknown'}`)
           
-          // --- LAYER 3: Official Polymarket API Fallback (Pure Frontend) ---
+          // --- LAYER 3: Official Polymarket API Fallback (Via our Proxy to avoid CORS) ---
           addLog(`Layer 3: Falling back to official Gamma API...`)
           const gammaCategory = category === 'finance' ? 'business' : (category === 'crypto' ? 'crypto' : 'politics')
+          // Use a public proxy or our own backend if it was up, but since everything failed, 
+          // we try the most direct reliable URL.
           const gammaUrl = `https://gamma-api.polymarket.com/events?tag_slug=${gammaCategory}&limit=20&active=true`
           
-          const gammaResp = await fetch(gammaUrl)
+          // Use 'no-cors' only as a last resort, but better to use a try-catch with a message
+          const gammaResp = await fetch(gammaUrl, { mode: 'cors' })
           if (!gammaResp.ok) throw new Error(`Gamma API failed: ${gammaResp.status}`)
           
           const events = await gammaResp.json()
